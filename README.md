@@ -17,3 +17,6 @@ This system has 5 tables named as:
 5."Booking_Details" ( Booking_ID, Start_Time, Return_Time, Dest_ID, Reg_No, Ins_Code, Paid_Amount, Due_Amount, Late_Fee, NID)
 
 
+                                                         Schema Diagram:
+
+![Diagram 3](https://github.com/DatabaseSystem19/database-project-cm-turjo/assets/67799082/c986098c-c631-4c04-9627-b3173408e02c)
