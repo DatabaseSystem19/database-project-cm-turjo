@@ -1,16 +1,16 @@
 --1.check basic info and store them into variables and print them
 
-SET SERVEROUTPUT ON
+set serveroutput on
 
-DECLARE
+declare
 
-name1 CUSTOMER_DETAILS.name%TYPE;
+name1 customer_details.name%type;
 
-EMAIL1 CUSTOMER_DETAILS.EMAIL_ID%TYPE;
+email1 customer_details.email_id%type;
 
-MOBILE1 CUSTOMER_DETAILS.MOBILE%TYPE;
+mobile1 customer_details.mobile%type;
 
-BEGIN
+begin
 
 select name, email_id, mobile into name1,email1,mobile1 from customer_details where nid =101136854;
 
@@ -136,6 +136,8 @@ if v_car.model_year>2010 then
 --6.Using function to check which has maximum due amount
 
 
+
+
 create or replace function get_name(var1 in number) return varchar2 as
 
 value customer_details.name%type;
@@ -207,6 +209,7 @@ end loop;
 end;
 /
 
+
 --8 using without extend function
 
 
@@ -248,5 +251,119 @@ counter:=counter+1;
 end loop;
 end;
 /
-   
+ 
+
+
+--9.Finding out customer names who have gone to the specific destinations by searching destination name using procedure and cursor
+
+
+create or replace procedure customerfind(dest_name1 in dest_details.dest_name%type) is
+
+cursor c_customer is select  name from customer_details join booking_details on customer_details.nid=booking_details.NID join DEST_DETAILS on booking_details.dest_id=DEST_DETAILS.DEST_ID where DEST_DETAILS.dest_name=dest_name1;
+
+customer_name customer_details.name%type;
+
+begin
+
+open c_customer;
+
+loop
+fetch c_customer into customer_name;
+exit when c_customer%notfound;
+dbms_output.put_line('Customer Name is: '|| customer_name);
+end loop;
+
+close c_customer;
+end;
+/
+
+begin
+customerfind('Lalon Bridge');
+end;
+/
+  
+
+
+--10.Trigger Used to delete info from another table upon deletion
+
+
+create or replace trigger try1
+
+before delete on booking_details
+
+referencing old as o new as n
+for each row
+begin
+delete from customer_details where nid=:o.nid;
+
+end;
+show errors;
+/
+
+
+delete from booking_details where booking_id=5010;
+
+select * from customer_details;
+select * from booking_details;
+
+
+
+
+--11.Trigger used to insert info into another table from another table insertion
+
+
+create or replace trigger try2
+after insert on booking_details
+referencing new as n
+for each row
+begin
+    insert into customer_details values (:n.nid,'prapty saha',01711098454,'sahaprapty@gmail.com','11, khanabari main, khulna-9203');
+end;
+/
+
+show errors;
+
+insert into booking_details values(5011,date '2023-04-26',date '2023-04-27',1009,'RANGPUR-DA-14-1254',4007,7000,1500,700,101136909);
+
+select * from customer_details;
+select * from booking_details;
+
+commit;
+
+
+
+
+--12 Trigger Used to update info on a table that will reflect on another table 
+
+
+set serveroutput on
+create or replace trigger try3
+
+after update on booking_details
+referencing old as o new as n
+
+for each row
+
+begin
+
+if :n.due_amount>:o.paid_amount then
+
+dbms_output.put_line('Credibility Issue Raised');
+
+elsif :n.due_amount=:o.paid_amount then
+
+dbms_output.put_line('Credibility Issue Created');
+
+else dbms_output.put_line('No Credibility Issue');
+
+end if;
+end;
+/
+
+show errors;
+
+update booking_details set due_amount=due_amount*1.6;
+commit;
+
+
 
